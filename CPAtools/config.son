@@ -1,0 +1,13 @@
+{
+  "base_url": "你的CPA地址",
+  "cpa_password": "你的CPA密码",
+  "target_type": "codex",
+  "provider": "",
+  "workers": 200,
+  "delete_workers": 40,
+  "timeout": 10,
+  "retries": 1,
+  "user_agent": "codex_cli_rs/0.76.0 (Debian 13.0.0; x86_64) WindowsTerminal",
+  "chatgpt_account_id": "",
+  "output": "invalid_codex_accounts.json"
+}

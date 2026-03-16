@@ -1,0 +1,14 @@
+.git
+.venv
+.venv-build-macos
+.venv-build-windows
+__pycache__/
+*.pyc
+build/
+dist/
+logs/
+account/
+output_fixed/
+failed_register_tasks/
+*.tar.gz
+

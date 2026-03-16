@@ -1,0 +1,25 @@
+services:
+  merge-mailtm:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: merge-mailtm:latest
+    container_name: merge-mailtm
+    restart: unless-stopped
+    environment:
+      TZ: Asia/Shanghai
+      CONFIG_PATH: /data/config.json
+      LOG_DIR: /data/logs
+      INTERVAL_SECONDS: "900"
+      STARTUP_DELAY_SECONDS: "5"
+      JITTER_SECONDS: "30"
+      FAILURE_BACKOFF_SECONDS: "120"
+      CONTINUE_ON_ERROR: "1"
+      RUN_ONCE: "0"
+    volumes:
+      - ./config.json:/data/config.json:ro
+      - ./logs:/data/logs
+      - ./account:/data/account
+      - ./output_fixed:/data/output_fixed
+      - ./failed_register_tasks:/data/failed_register_tasks
+

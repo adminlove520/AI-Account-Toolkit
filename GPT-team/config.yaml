@@ -1,0 +1,50 @@
+# ============================================================
+# 自动回调脚本 配置文件
+# ============================================================
+
+# 注册账号总数
+total_accounts: 1
+
+# ------------------------------------------------------------
+# 临时邮箱 API 配置
+# ------------------------------------------------------------
+temp_mail:
+  worker_domain: ""
+  email_domains:
+    - "xxx.xyz"
+    - "xxx.eu.org"
+  admin_password: "xxxxxx"
+
+# ------------------------------------------------------------
+# CLI Proxy API (CPA) 配置
+# ------------------------------------------------------------
+cli_proxy:
+  management_url: "http://xxx.comn:8317/management.html#/oauth"
+  password: "xxxxxx"
+  api_base: "http://xxx.comn:8317"
+  upload_enabled: true    # true=注册后自动上传到CPA | false=只保存本地
+
+# ------------------------------------------------------------
+# 输出文件
+# ------------------------------------------------------------
+output:
+  accounts_file: "accounts.txt"        # 格式：email|password|时间（一行一个）
+  invite_tracker_file: "invite_tracker.json"
+  results_file: "results.txt"           # get_tokens.py 输出：email|email_jwt|access_token
+
+
+# ------------------------------------------------------------
+# 车头（Team）配置
+# 只需填 email 和 max_invites，account_id/auth_token 自动获取
+# password 可不填 → 自动使用邮箱验证码登录
+# jwt: 母号在 email.xxx.xyz 里的 JWT Token（可选，填了就不需要API查询）
+#   获取方式：登录 https://email.xxx.xyz → 用母号邮箱登录 → 复制 Token
+# ------------------------------------------------------------
+teams:
+  - name: "1"
+    email: "xxx@xxx.xyz"
+    password: "xxxxxx"
+    jwt: "eyJhbGxxxxxx"   # ← 填入母号在 email.856777.xyz 的 JWT 后，OTP 可自动接收
+    max_invites: 4
+
+

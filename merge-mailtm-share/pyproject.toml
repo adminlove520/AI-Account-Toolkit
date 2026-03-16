@@ -1,0 +1,12 @@
+[project]
+name = "merge-mailtm"
+version = "0.1.0"
+description = "Account pool maintainer with Mail.tm, DuckMail and CFMail providers"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = []
+
+[project.optional-dependencies]
+build = [
+    "pyinstaller>=6.0",
+]

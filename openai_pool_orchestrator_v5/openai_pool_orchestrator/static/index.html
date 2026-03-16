@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>OpenAI Pool Orchestrator</title>
+  <meta name="description" content="OpenAI 账号池编排器 — Web 可视化界面" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+
+<body>
+
+  <!-- ========== 头部 ========== -->
+  <header>
+    <div class="header-brand">
+      <div class="logo">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a4 4 0 0 0-4 4v2H6a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V10a2 2 0 0 0-2-2h-2V6a4 4 0 0 0-4-4z"/><circle cx="12" cy="15" r="2"/></svg>
+      </div>
+      <h1>Pool Orchestrator</h1>
+      <span class="version">v5.0</span>
+    </div>
+    <div class="header-right">
+      <div id="headerSub2apiChip" class="pool-chip status-idle" title="Sub2Api 池状态">
+        <span class="pool-chip-name">Sub2Api</span>
+        <span id="headerSub2apiLabel" class="pool-chip-value">-- / --</span>
+        <span id="headerSub2apiDelta" class="pool-chip-delta">--</span>
+        <div class="pool-chip-track">
+          <div id="headerSub2apiBar" class="pool-chip-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div id="headerCpaChip" class="pool-chip status-idle" title="CPA 池状态">
+        <span class="pool-chip-name">CPA</span>
+        <span id="headerCpaLabel" class="pool-chip-value">-- / --</span>
+        <span id="headerCpaDelta" class="pool-chip-delta">--</span>
+        <div class="pool-chip-track">
+          <div id="headerCpaBar" class="pool-chip-fill" style="width:0%"></div>
+        </div>
+      </div>
+      <div id="statusBadge" class="status-badge idle">
+        <span id="statusDot" class="status-dot"></span>
+        <span id="statusText">空闲</span>
+      </div>
+      <button id="themeToggleBtn" class="theme-toggle-btn" type="button" aria-label="切换到明亮主题" title="切换到明亮主题">
+        <span class="theme-toggle-icon" aria-hidden="true"></span>
+        <span class="theme-toggle-label">黑暗</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- ========== 进度条 ========== -->
+  <div class="progress-bar">
+    <div id="progressFill" class="progress-fill"></div>
+  </div>
+
+  <!-- ========== Tab 导航 — iOS Segmented Control ========== -->
+  <nav class="tab-nav" role="tablist">
+    <div class="segmented-control">
+      <div class="segment-indicator" id="segmentIndicator"></div>
+      <button class="tab-btn active" data-tab="tabDashboard" role="tab" aria-selected="true" aria-controls="tabDashboard">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span>仪表盘</span>
+      </button>
+      <button class="tab-btn" data-tab="tabConfig" role="tab" aria-selected="false" aria-controls="tabConfig">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        <span>配置中心</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ========== 仪表盘 Tab ========== -->
+  <div id="tabDashboard" class="tab-panel active" role="tabpanel">
+
+    <div class="app-shell">
+
+      <!-- ===== 左栏：控制面板 ===== -->
+      <aside class="sidebar">
+
+        <!-- 代理配置 -->
+        <div class="panel-section">
+          <div class="section-title">代理配置</div>
+          <div class="proxy-row">
+            <div class="input-wrapper">
+              <input type="text" id="proxyInput" placeholder="http://127.0.0.1:7897" value="http://127.0.0.1:7897"
+                autocomplete="off" spellcheck="false" />
+            </div>
+            <button id="checkProxyBtn" class="btn btn-ghost btn-sm">检测</button>
+            <button id="saveProxyBtn" class="btn btn-ghost btn-sm">保存</button>
+          </div>
+          <div id="proxyStatus" class="proxy-status">
+            <span>点击「检测」验证代理可用性</span>
+          </div>
+        </div>
+
+        <!-- 任务控制 -->
+        <div class="panel-section">
+          <div class="section-title">任务控制</div>
+          <div class="toggle-row">
+            <label class="ios-toggle-label" for="multithreadCheck">
+              <span class="ios-toggle">
+                <input type="checkbox" id="multithreadCheck" />
+                <span class="toggle-track"></span>
+              </span>
+              <span>多线程</span>
+            </label>
+            <div class="thread-count-wrap">
+              <label>线程</label>
+              <input type="number" id="threadCountInput" value="3" min="1" max="10" />
+            </div>
+          </div>
+          <div class="toggle-row">
+            <label class="ios-toggle-label" for="autoRegisterCheck">
+              <span class="ios-toggle">
+                <input type="checkbox" id="autoRegisterCheck" />
+                <span class="toggle-track"></span>
+              </span>
+              <span>池不足自动注册</span>
+            </label>
+          </div>
+          <div class="control-buttons">
+            <button id="btnStart" class="btn btn-success">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              启动
+            </button>
+            <button id="btnStop" class="btn btn-danger" disabled>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="4" width="16" height="16" rx="2"/></svg>
+              停止
+            </button>
+          </div>
+        </div>
+
+        <!-- 统计 -->
+        <div class="panel-section">
+          <div class="section-title">统计</div>
+          <div class="stats-grid">
+            <div class="stat-card">
+              <div id="statSuccess" class="stat-value green">0</div>
+              <div class="stat-label">成功</div>
+            </div>
+            <div class="stat-card">
+              <div id="statFail" class="stat-value red">0</div>
+              <div class="stat-label">失败</div>
+            </div>
+            <div class="stat-card span-2">
+              <div id="statTotal" class="stat-value blue">0</div>
+              <div class="stat-label">总计</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 注册步骤追踪 -->
+        <div class="panel-section">
+          <div class="section-title">注册进度</div>
+          <div id="stepsTracker" class="steps-tracker"></div>
+        </div>
+
+      </aside>
+
+      <!-- 拖拽分隔条（左） -->
+      <div class="resize-handle" id="resizeLeft"></div>
+
+      <!-- ===== 中栏：日志面板 ===== -->
+      <main class="main-area">
+        <div class="log-panel">
+          <div class="log-header">
+            <div class="log-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+              <span>实时日志</span>
+              <span id="logCount" class="log-count-badge">0</span>
+            </div>
+            <div class="log-actions">
+              <label class="ios-toggle-label log-autoscroll-label" for="autoScrollCheck">
+                <span class="ios-toggle ios-toggle-sm">
+                  <input type="checkbox" id="autoScrollCheck" checked />
+                  <span class="toggle-track"></span>
+                </span>
+                <span>自动滚动</span>
+              </label>
+              <button id="clearLogBtn" class="btn btn-ghost btn-sm">清空</button>
+            </div>
+          </div>
+          <div id="logBody" class="log-body">
+            <div class="log-entry log-placeholder">
+              等待任务启动...
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <!-- 拖拽分隔条（右） -->
+      <div class="resize-handle" id="resizeRight"></div>
+
+      <!-- ===== 右栏：池状态 + Token ===== -->
+      <aside class="data-panel">
+
+        <!-- Sub2Api 账号池 -->
+        <div class="pool-section-header">Sub2Api 账号池</div>
+        <div class="pool-overview">
+          <div class="pool-stat-card">
+            <div id="sub2apiPoolTotal" class="stat-value blue">--</div>
+            <div class="stat-label">总账号</div>
+          </div>
+          <div class="pool-stat-card">
+            <div id="sub2apiPoolNormal" class="stat-value green">--</div>
+            <div class="stat-label">正常</div>
+          </div>
+          <div class="pool-stat-card">
+            <div id="sub2apiPoolError" class="stat-value red">--</div>
+            <div class="stat-label">异常</div>
+          </div>
+          <div class="pool-stat-card">
+            <div id="sub2apiPoolThreshold" class="stat-value muted">--</div>
+            <div class="stat-label">目标</div>
+          </div>
+          <div class="pool-stat-card">
+            <div id="sub2apiPoolPercent" class="stat-value">--</div>
+            <div class="stat-label">充足率</div>
+          </div>
+          <div class="pool-action-group">
+            <button id="sub2apiPoolRefreshBtn" class="btn btn-ghost btn-sm">刷新</button>
+            <button id="sub2apiPoolMaintainBtn" class="btn btn-primary btn-sm">维护</button>
+            <span id="sub2apiPoolMaintainStatus" class="inline-status"></span>
+          </div>
+        </div>
+
+        <!-- CPA 账号池 -->
+        <div class="pool-section-header">CPA 账号池</div>
+        <div class="pool-overview">
+          <div class="pool-stat-card">
+            <div id="poolTotal" class="stat-value blue">--</div>
+            <div class="stat-label">总账号</div>
+          </div>
+          <div class="pool-stat-card">
+            <div id="poolCandidates" class="stat-value green">--</div>
+            <div class="stat-label">正常</div>
+          </div>
+          <div class="pool-stat-card">
+            <div id="poolError" class="stat-value red">--</div>
+            <div class="stat-label">异常</div>
+          </div>
+          <div class="pool-stat-card">
+            <div id="poolThreshold" class="stat-value muted">--</div>
+            <div class="stat-label">目标</div>
+          </div>
+          <div class="pool-stat-card">
+            <div id="poolPercent" class="stat-value">--</div>
+            <div class="stat-label">充足率</div>
+          </div>
+          <div class="pool-action-group">
+            <button id="poolRefreshBtn" class="btn btn-ghost btn-sm">刷新</button>
+            <button id="poolMaintainBtn" class="btn btn-primary btn-sm">维护</button>
+            <span id="poolMaintainStatus" class="inline-status"></span>
+          </div>
+        </div>
+
+        <!-- Token 表格 -->
+        <div class="pool-table-wrap">
+          <div class="pool-table-header">
+            <div class="log-title">
+              <span>本地 Token</span>
+              <span id="poolTokenCount" class="log-count-badge">0</span>
+            </div>
+            <div style="display:flex;gap:6px;">
+              <button id="poolCopyRtBtn" class="btn btn-ghost btn-sm">复制 RT</button>
+              <button id="poolPwSyncBtn" class="btn btn-primary btn-sm">批量导入</button>
+            </div>
+          </div>
+          <div class="token-filter-row">
+            <select id="tokenFilterStatus" class="token-filter-select">
+              <option value="all">全部</option>
+              <option value="synced">仅已导入</option>
+              <option value="unsynced">仅未导入</option>
+              <option value="cpa">仅 CPA</option>
+              <option value="sub2api">仅 Sub2Api</option>
+              <option value="both">CPA + Sub2Api</option>
+            </select>
+            <input id="tokenFilterKeyword" type="text" placeholder="筛选邮箱/文件名" />
+            <button id="tokenFilterApplyBtn" class="btn btn-ghost btn-sm">筛选</button>
+            <button id="tokenFilterResetBtn" class="btn btn-ghost btn-sm">重置</button>
+          </div>
+          <div id="poolTokenList" class="token-list">
+            <div class="empty-state">
+              <div class="empty-icon">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
+              </div>
+              <span>暂无 Token</span>
+            </div>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+
+  </div>
+
+  <!-- ========== 配置中心 Tab ========== -->
+  <div id="tabConfig" class="tab-panel" role="tabpanel">
+    <div class="config-page">
+
+      <!-- 全局上传策略 -->
+      <div class="config-card collapsible open" style="grid-column: span 2;">
+        <div class="collapsible-trigger">
+          <span>全局上传策略</span>
+          <span class="collapse-icon">▶</span>
+        </div>
+        <div class="collapsible-body">
+          <div class="config-field" style="max-width:720px;">
+            <label>上传策略</label>
+            <select id="uploadMode">
+              <option value="snapshot">串行补平台（先CPA后Sub2Api）</option>
+              <option value="decoupled">双平台同传（单账号双上传）</option>
+            </select>
+            <div class="config-hint">
+              串行模式更保守；并行模式会让单账号并发上传到两个平台。当前任务运行中切换策略，将在下轮任务生效。
+            </div>
+          </div>
+          <div class="config-actions" style="margin-top:8px;">
+            <button id="uploadModeSaveBtn" class="btn btn-primary btn-sm">保存策略</button>
+            <span id="uploadModeStatus" class="inline-status"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 请求代理池配置 -->
+      <div class="config-card collapsible open" style="grid-column: span 2;">
+        <div class="collapsible-trigger">
+          <span>请求代理池配置</span>
+          <span class="collapse-icon">▶</span>
+        </div>
+        <div class="collapsible-body">
+          <div class="config-hint" style="margin-top:0;">
+            在每次请求前动态取号。默认接口将附带 <code>api_key</code>、<code>count</code>、<code>country</code> 参数。
+          </div>
+          <div class="toggle-row" style="margin-top:10px;">
+            <label class="ios-toggle-label" for="proxyPoolEnabled">
+              <span class="ios-toggle ios-toggle-sm">
+                <input type="checkbox" id="proxyPoolEnabled" />
+                <span class="toggle-track"></span>
+              </span>
+              <span>启用请求前代理池</span>
+            </label>
+          </div>
+          <div class="config-field">
+            <label>代理池 API</label>
+            <input type="text" id="proxyPoolApiUrl" value="https://zenproxy.top/api/fetch" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="config-row">
+            <div class="config-field" style="flex:1;">
+              <label>认证方式</label>
+              <select id="proxyPoolAuthMode">
+                <option value="query">Query 参数</option>
+                <option value="header">Header Bearer</option>
+              </select>
+            </div>
+            <div class="config-field" style="flex:1;">
+              <label>API Key（留空则保持原值）</label>
+              <input type="password" id="proxyPoolApiKey" placeholder="19c0ec43-8f76-4c97-81bc-bcda059eeba4" autocomplete="off" />
+            </div>
+          </div>
+          <div class="config-row">
+            <div class="config-field" style="max-width:180px;">
+              <label>Count</label>
+              <input type="number" id="proxyPoolCount" value="1" min="1" max="20" />
+            </div>
+            <div class="config-field" style="max-width:180px;">
+              <label>Country</label>
+              <input type="text" id="proxyPoolCountry" value="US" maxlength="8" autocomplete="off" spellcheck="false" />
+            </div>
+          </div>
+          <div class="config-actions">
+            <button id="proxyPoolTestBtn" class="btn btn-ghost btn-sm">测试代理池取号</button>
+            <button id="proxyPoolSaveBtn" class="btn btn-primary btn-sm">保存代理池配置</button>
+            <span id="proxyPoolStatus" class="inline-status"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CPA 平台配置 -->
+      <div class="config-card collapsible open">
+        <div class="collapsible-trigger">
+          <span>CPA 平台配置</span>
+          <span class="collapse-icon">▶</span>
+        </div>
+        <div class="collapsible-body">
+          <div class="config-field">
+            <label>Base URL</label>
+            <input type="text" id="cpaBaseUrl" placeholder="https://your-cpa-server.com" autocomplete="off"
+              spellcheck="false" />
+          </div>
+          <div class="config-field">
+            <label>Token</label>
+            <input type="password" id="cpaToken" placeholder="CPA 登录密码" autocomplete="off" />
+          </div>
+          <div class="config-row">
+            <div class="config-field" style="flex:1;">
+              <label>目标阈值</label>
+              <input type="number" id="cpaMinCandidates" value="800" min="1" />
+            </div>
+            <div class="config-field" style="flex:1;">
+              <label>使用率阈值(%)</label>
+              <input type="number" id="cpaUsedPercent" value="95" min="1" max="100" />
+            </div>
+          </div>
+          <div class="config-row" style="margin-top:10px;">
+            <div class="config-field" style="flex:1;">
+              <label class="ios-toggle-label" for="cpaAutoMaintain">
+                <span class="ios-toggle ios-toggle-sm">
+                  <input type="checkbox" id="cpaAutoMaintain" />
+                  <span class="toggle-track"></span>
+                </span>
+                <span>自动维护</span>
+              </label>
+            </div>
+            <div class="config-field" style="flex:1;">
+              <label>间隔(分钟)</label>
+              <input type="number" id="cpaInterval" value="30" min="5" />
+            </div>
+          </div>
+          <div class="config-actions">
+            <button id="cpaTestBtn" class="btn btn-ghost btn-sm">测试连接</button>
+            <button id="cpaSaveBtn" class="btn btn-primary btn-sm">保存</button>
+            <span id="cpaStatus" class="inline-status"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sub2Api 平台配置 -->
+      <div class="config-card collapsible open">
+        <div class="collapsible-trigger">
+          <span>Sub2Api 平台配置</span>
+          <span class="collapse-icon">▶</span>
+        </div>
+        <div class="collapsible-body">
+          <div class="config-field">
+            <label>平台地址</label>
+            <input type="text" id="sub2apiBaseUrl" value="" autocomplete="off" spellcheck="false" />
+          </div>
+          <div class="config-row">
+            <div class="config-field" style="flex:1;">
+              <label>管理员邮箱</label>
+              <input type="text" id="sub2apiEmail" value="" autocomplete="off" placeholder="admin@example.com" />
+            </div>
+            <div class="config-field" style="flex:1;">
+              <label>密码</label>
+              <input type="password" id="sub2apiPassword" value="" autocomplete="off" />
+            </div>
+          </div>
+          <div class="toggle-row" style="margin-top:6px;">
+            <label class="ios-toggle-label" for="autoSyncCheck">
+              <span class="ios-toggle ios-toggle-sm">
+                <input type="checkbox" id="autoSyncCheck" checked />
+                <span class="toggle-track"></span>
+              </span>
+              <span>注册后自动导入</span>
+            </label>
+          </div>
+          <div class="config-row" style="margin-top:10px;">
+            <div class="config-field" style="flex:1;">
+              <label>目标阈值</label>
+              <input type="number" id="sub2apiMinCandidates" value="200" min="1" />
+            </div>
+            <div class="config-field" style="flex:1;">
+              <label>维护间隔(分钟)</label>
+              <input type="number" id="sub2apiInterval" value="30" min="5" />
+            </div>
+          </div>
+          <div class="toggle-row" style="margin-top:6px;">
+            <label class="ios-toggle-label" for="sub2apiAutoMaintain">
+              <span class="ios-toggle ios-toggle-sm">
+                <input type="checkbox" id="sub2apiAutoMaintain" />
+                <span class="toggle-track"></span>
+              </span>
+              <span>自动维护</span>
+            </label>
+          </div>
+          <div class="config-actions">
+            <button id="sub2apiTestPoolBtn" class="btn btn-ghost btn-sm">测试连接</button>
+            <button id="saveSyncConfigBtn" class="btn btn-primary btn-sm">保存</button>
+            <span id="syncStatus" class="inline-status"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 邮箱提供商 -->
+      <div class="config-card collapsible open" style="grid-column: span 2;">
+        <div class="collapsible-trigger">
+          <span>邮箱提供商</span>
+          <span class="collapse-icon">▶</span>
+        </div>
+        <div class="collapsible-body">
+          <div class="mail-providers-group">
+            <div class="provider-item" data-provider="mailtm">
+              <label class="provider-toggle">
+                <input type="checkbox" class="mail-provider-check" value="mailtm" checked />
+                <span class="provider-check-mark"></span>
+                Mail.tm (免费)
+              </label>
+              <div class="provider-config">
+                <div class="config-field">
+                  <label>API 地址</label>
+                  <input type="text" data-key="api_base" placeholder="https://api.mail.tm" autocomplete="off"
+                    spellcheck="false" />
+                </div>
+              </div>
+            </div>
+            <div class="provider-item" data-provider="moemail">
+              <label class="provider-toggle">
+                <input type="checkbox" class="mail-provider-check" value="moemail" />
+                <span class="provider-check-mark"></span>
+                MoeMail (API Key)
+              </label>
+              <div class="provider-config" style="display:none;">
+                <div class="config-field">
+                  <label>API 地址</label>
+                  <input type="text" data-key="api_base" placeholder="https://your-moemail-api.example.com" autocomplete="off"
+                    spellcheck="false" />
+                </div>
+                <div class="config-field">
+                  <label>API Key</label>
+                  <input type="password" data-key="api_key" placeholder="MoeMail API Key" autocomplete="off" />
+                </div>
+              </div>
+            </div>
+            <div class="provider-item" data-provider="duckmail">
+              <label class="provider-toggle">
+                <input type="checkbox" class="mail-provider-check" value="duckmail" />
+                <span class="provider-check-mark"></span>
+                DuckMail (Bearer Token)
+              </label>
+              <div class="provider-config" style="display:none;">
+                <div class="config-field">
+                  <label>API 地址</label>
+                  <input type="text" data-key="api_base" placeholder="https://api.duckmail.sbs" autocomplete="off"
+                    spellcheck="false" />
+                </div>
+                <div class="config-field">
+                  <label>Bearer Token</label>
+                  <input type="password" data-key="bearer_token" placeholder="DuckMail Bearer Token"
+                    autocomplete="off" />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="config-field" style="margin-top:10px;max-width:240px;">
+            <label>路由策略</label>
+            <select id="mailStrategySelect">
+              <option value="round_robin">轮询</option>
+              <option value="random">随机</option>
+              <option value="failover">容错优先</option>
+            </select>
+          </div>
+          <div class="config-actions">
+            <button id="mailTestBtn" class="btn btn-ghost btn-sm">测试连接</button>
+            <button id="mailSaveBtn" class="btn btn-primary btn-sm">保存</button>
+            <span id="mailStatus" class="inline-status"></span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Toast 容器 -->
+  <div id="toastContainer" class="toast-container"></div>
+
+  <script src="/static/app.js"></script>
+</body>
+
+</html>

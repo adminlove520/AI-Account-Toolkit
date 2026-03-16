@@ -1,0 +1,12 @@
+{
+  "_comment": "ChatGPT 批量自动注册工具配置文件 (DuckMail 临时邮箱版)",
+
+  "total_accounts": 3,
+
+  "duckmail_api_base": "https://api.duckmail.sbs",
+  "duckmail_bearer": "",
+
+  "proxy": "",
+
+  "output_file": "registered_accounts.txt"
+}
