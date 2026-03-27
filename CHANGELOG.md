@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.1.0] - 2026-03-27
+
+### Added
+- tempmail 子模块 (`packages/email/tempmail`) - 自托管临时邮箱服务
+- MIT LICENSE 文件
+- CONTRIBUTING.md 贡献指南
+- GitHub Issue 模板 (Bug 报告 / 功能请求 / 新子模块推荐)
+- README 添加 Badges、目录导航、英文摘要、Star History
+- 6 个缺失子模块的文档章节 (chatgpt-creator, openai-oauth, claude-key-switch, gemini-balance-do, codex-lb, key-scraper)
+
+### Fixed
+- 修复 9 个子模块 `not our ref` 克隆失败问题 (Issue #2)
+- 修复 README 中 `any-auto-register` 路径错误
+- 修复依赖安装脚本只扫描根目录的问题
+- 重命名 PR 模板文件名 (PREQUEST_TEMPLATE → PULL_REQUEST_TEMPLATE)
+
+### Changed
+- README 全面重构：按 packages 分类组织，添加子模块表格
+- 清理 PR 模板中的无关内容 (EXTRACT_PROMPT 段落)
+- 更新 PR Review Workflow labeler 规则匹配项目结构
+- 更新 GitHub 仓库描述和 Topics
+
+### Removed
+- 移除根目录重复的 `cloudflare_temp_email/` 目录 (已作为子模块存在)
+- 移除根目录重复的 `grokregister/` 目录 (已作为子模块存在)
+- 移除临时文件 `github_issue_content.md` 和空模板 `SKILL.md`
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 

@@ -1,0 +1,23 @@
+name: 功能请求 / Feature Request
+description: 建议新功能或改进 / Suggest a new feature or improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: 功能描述 / Description
+      description: 描述您希望看到的功能。/ Describe the feature you'd like to see.
+    validations:
+      required: true
+  - type: textarea
+    id: use_case
+    attributes:
+      label: 应用场景 / Use Case
+      description: 为什么这个功能对您或其他人有用？/ Why would this feature be useful?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: 建议方案 / Proposed Solution (Optional)
+      description: 您是否有实现该功能的想法？/ Do you have an idea on how to implement this?

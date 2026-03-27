@@ -1,0 +1,41 @@
+name: 新子模块推荐 / New Submodule
+description: 推荐添加新的工具子模块 / Recommend a new tool submodule to be added
+labels: ["submodule"]
+body:
+  - type: input
+    id: repo_url
+    attributes:
+      label: 仓库地址 / Repo URL
+      description: 子模块的 GitHub 或其他 Git 仓库地址。/ The GitHub or Git repo URL of the submodule.
+      placeholder: https://github.com/user/repo
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: 功能描述 / Description
+      description: 这个子模块是做什么的？/ What does this submodule do?
+    validations:
+      required: true
+  - type: dropdown
+    id: category
+    attributes:
+      label: 类别 / Category
+      options:
+        - openai
+        - claude
+        - codex
+        - gemini
+        - cursor
+        - grok
+        - email
+        - tools
+    validations:
+      required: true
+  - type: textarea
+    id: reason
+    attributes:
+      label: 推荐理由 / Reason
+      description: 为什么应该添加它？/ Why should we add it?
+    validations:
+      required: true
