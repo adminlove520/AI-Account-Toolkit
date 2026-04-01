@@ -1,0 +1,24 @@
+{
+  "name": "codex-remote-registrar",
+  "version": "1.0.0",
+  "description": "Codex远程注册机 - 基于Browserbase和DDG邮箱别名",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "codex",
+    "browserbase",
+    "ddg",
+    "registration"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.13.6",
+    "dotenv": "^16.4.7",
+    "ws": "^8.18.1"
+  }
+}
